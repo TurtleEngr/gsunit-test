@@ -1,7 +1,7 @@
 /**
  * $Source: /repo/public.cvs/app/gsunit-test/github/gsunit.js,v $
- * @copyright $Date: 2021/02/24 22:44:52 $ UTC
- * @version $Revision: 1.18 $
+ * @copyright $Date: 2021/02/25 07:17:59 $ UTC
+ * @version $Revision: 1.19 $
  * @author TurtleEngr
  * @license https://www.gnu.org/licenses/gpl-3.0.txt
  * @example see file verify-gsunit.gs
@@ -10,70 +10,18 @@
 //==============================================
 'use strict';
 
-// ==============================================
-// Define menus
-
-// ----------------------
-function menuGsUnitTest(pUi, pMenu) {
-  pMenu = pMenu.addSeparator()
-    .addSubMenu(pUi.createMenu('Test GSUnit')
-      .addItem('Verify Sheet', 'runGsUnitTestSheet')
-      .addItem('Smoke Test', 'runGsUnitSmokeTest')
-      .addItem('Test All', 'runGsUnitTestAll')
-    );
-  return pMenu;
-} // menuGsUnitTest
-
-/*
-  // Example for menuGsUnitTest
-
-  // Put in main script file
-  function onOpen(e) {
-    try {
-      let ui = SpreadsheetApp.getUi();
-      let menu = ui.createMenu('Rename-Files')
-        .addItem('Get List', 'menuGetList')
-        .addItem('Rename List', 'menuRenameList')
-        .addItem('Undo List', 'menuUndoList')
-      if (typeof menuTestRename === 'function')
-        menu = menuTestRename(ui, menu);
-      menu.addToUi();
-    } catch (e) {
-      console.error('InternalError');
-      console.error(e.stack);
-      throw e;
-    }
-  }
-
-  // Put in the test script file for the main script
-  function menuTestRename(pUi, pMenu) {
-    pMenu = pMenu.addSeparator()
-      .addSubMenu(pUi.createMenu('Test Replace')
-        .addItem('Make Class', 'runMakeClass')
-        .addItem('Check Config', 'runCheckConfig')
-        .addItem('Get Files Test', 'runGetFilesTest')
-        .addItem('Rename Files Test', 'runRenameFiles')
-        .addItem('RunAll Test', 'runAllTests')
-        .addItem('Clean Up', 'runCleanup')
-      );
-    if (typeof menuGsUnitTest)
-      pMenu = menuGsUnitTest(pUi, pMenu);
-    return pMenu;
-  }
-*/
-
 //==============================================
+/**
+ * @class
+ * @classdesc Used to throw an Exception (non-error)
+ * @param {string} pMsg - user message appended to the pass/fail message
+ * @param pActual - actual test result
+ * @param pExpected - expected result
+ * @param {string} pOperator - the assert function name (assert part is removed)
+ * @param {string} pCode - this is a short code used for finding the test assert.
+ * @example throw new AssertFail('Check result', result, 45, 'Equal', 'tcr2.4');
+ */
 class AssertFail extends Error {
-  /**
-   * @class
-   * @classdesc Used to throw an Exception (non-error)
-   * @param {string} pMsg
-   * @param pActual
-   * @param pExpected
-   * @param {string} pOperator
-   * @param {string} pCode
-   * @example throw new AssertFail('Check result', result, 45, 'Equal', 8888);
-   */
   constructor(pMsg, pActual, pExpected, pOperator, pCode = '') {
     super('for ' + pOperator + '. ' + pMsg + (pCode !== '' ? ' [' + pCode + ']' : ''));
     this.name = 'AssertFail';
@@ -84,36 +32,39 @@ class AssertFail extends Error {
   }
 } // AssertFail
 
-//==============================================
+//======================================================================
+/**
+ * @class
+ * @classdesc Unit test functions.
+ * @param {obj} pArg = {name: 'TestName', debug: true}
+ * @example let unit = new GsUnit({name: 'base', debug: true});
+ */
 class GsUnit {
   constructor(pArg) {
-    /**
-     * @private
-     * @param {obj} pArg = {name: 'TestName', debug: true}
-     * @example let unit = new GsUnit({name: 'base', debug: true});
-     */
     this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
     this.debug = pArg.debug !== undefined ? pArg.debug : false;
-    this.version = '$Revision: 1.18 $';
-    this.showDefault = true;
-    this.numAsserts = 0;
+    this.version = '$Revision: 1.19 $';
+    this.showDefault = true;  // Show default messages with user messages.
+    this.numAsserts = 0;  // Count the number of assert tests run.
   }
 
-  // ---------------------
-  debugMsg(pMsg) {
-    if (this.debug) {
+  /** ---------------------
+   * @method Output pMsg to console if this.debug is true
+   * @param {string} pMsg
+   */
+    debugMsg(pMsg) {
+    if (this.debug)
       console.info('Debug: ' + pMsg);
-    }
   }
 
-  // ---------------------
+  /** ---------------------
+   * @private
+   * @method Output a combonation of default message and user message.
+   * @param {string} pMsg
+   * @param {string} pDefault
+   * @returns {string}
+   */
   _default(pMsg, pDefault) {
-    /**
-     * @private
-     * @param {string} pMsg
-     * @param {string} pDefault
-     * @returns {string}
-     */
     if (pMsg == '')
       return pDefault;
     if (pDefault != '' && this.showDefault)
@@ -121,14 +72,12 @@ class GsUnit {
     return pMsg;
   }
 
-  // ---------------------
-
+  /** ---------------------
+   * @param {string} pMsg
+   * @param {string} pCode
+   * @example Equivelent to: assertTrue('Force Fail', false, 1)
+   */
   fail(pMsg, pCode = '') {
-    /**
-     * @param {string} pMsg
-     * @param {string} pCode
-     * @example Equivelent to: assertTrue('Force Fail', false, 1)
-     */
     throw new AssertFail(pMsg, true, false, 'Fail', pCode);
   }
 
@@ -144,43 +93,43 @@ class GsUnit {
       throw new AssertFail(this._default(pMsg, 'Expected actual to be false.'), pActual, false, 'False', pCode);
   }
 
-  //assertTrue('Must be null', (pActual != null), 1)
   assertNull(pMsg, pActual, pCode = '') {
+    // Alternative: assertTrue('Must be null', (pActual != null), 1)
     ++this.numAsserts;
     if (pActual != null)
       throw new AssertFail(this._default(pMsg, 'Expected actual to be null.'), pActual, true, 'Null', pCode);
   }
 
-  //assertTrue('Must not be null', (pActual == null), 1)
   assertNotNull(pMsg, pActual, pCode = '') {
+    // Alternative: assertTrue('Must not be null', (pActual == null), 1)
     ++this.numAsserts;
     if (pActual == null)
       throw new AssertFail(this._default(pMsg, 'Expected actual to not be null.'), pActual, true, 'NotNull', pCode);
   }
 
-  //assertTrue('Must be null', (pActual != null), 1)
   assertUndefined(pMsg, pActual, pCode = '') {
+    // Alt: assertTrue('Must be null', (pActual != null), 1)
     ++this.numAsserts;
     if (pActual != undefined)
       throw new AssertFail(this._default(pMsg, 'Expected actual to be undefined.'), pActual, true, 'Undefined', pCode);
   }
 
-  //assertTrue('Must be null', (pActual != null), 1)
   assertNotUndefined(pMsg, pActual, pCode = '') {
+    // Alt: assertTrue('Must be null', (pActual != null), 1)
     ++this.numAsserts;
     if (pActual == undefined)
       throw new AssertFail(this._default(pMsg, 'Expected actual to not be undefined.'), pActual, true, 'NotUndefined', pCode);
   }
 
-  //assertTrue('Must be null', (pActual != null), 1)
   assertNaN(pMsg, pActual, pCode = '') {
+    // Alt: assertTrue('Must be null', (pActual != null), 1)
     ++this.numAsserts;
     if (pActual != NaN)
       throw new AssertFail(this._default(pMsg, 'Expected actual to not be a number.'), pActual, true, 'NaN', pCode);
   }
 
-  //assertTrue('Must be null', (pActual != null), 1)
   assertNotNaN(pMsg, pActual, pCode = '') {
+    // Alt: assertTrue('Must be null', (pActual != null), 1)
     ++this.numAsserts;
     if (pActual == NaN)
       throw new AssertFail(this._default(pMsg, 'Expected actual to be a number.'), pActual, true, 'NotNaN', pCode);
@@ -225,8 +174,7 @@ class GsUnit {
       throw new AssertFail(pMsg, pActual, pExpected, 'ArrayEqual', pCode);
     if (pActual.length != pExpected.length)
       throw new AssertFail(pMsg, pActual, pExpected, 'ArrayEqual', pCode);
-    let i;
-    for (i in pActual)
+    for (let i in pActual)
       if (pActual[i] !== pExpected[i])
         throw new AssertFail(pMsg + '\n At index=' + i + ' expected="' + pExpected[i] + '" got="' + pActual[i] + '"', pActual[i], pExpected[i], 'ArrayEqual', pCode);
   }
@@ -251,22 +199,19 @@ class GsUnit {
   */
 
   assertArrayContains(pMsg, pActual, pValue, pCode = '') {
-    /**
-     * throw Error if pActual is not an array
-     */
     ++this.numAsserts;
     if (!Array.isArray(pActual))
       throw new AssertFail(this._default(pMsg, 'Actual is not an array.'), pActual, pValue, 'ArrayContains', pCode);
-    let i;
-    for (i in pActual)
+    // I think this can be replaced with: pActual.includes(pExpected)
+    for (let i in pActual)
       if (pActual[i] == pValue)
         return true;
     throw new AssertFail(this._default(pMsg, 'Array does not contain expected value.'), pActual, pExpected, 'ArrayContains', pCode);
   }
 
-  //assertTrue('String includes', (! actual.includes('str')), 1)
-  //assertTrue('String includes', (actual.indexOf('str') != -1), 1)
   assertStrContains(pMsg, pActual, pExpected, pCode = '') {
+    // Alt: assertTrue('String includes', (! actual.includes('str')), 1)
+    // Alt: assertTrue('String includes', (actual.indexOf('str') != -1), 1)
     ++this.numAsserts;
     if (typeof (pActual) != 'string' || typeof (pExpected) != 'string')
       throw new AssertFail(this._default(pMsg, 'One of the arugments is not a string.'), pActual, pExpected, 'StrContains', pCode);
@@ -284,14 +229,14 @@ class GsUnit {
 } // GsUnit
 
 // ======================================================================
+/**
+ * @param {obj} pArg = {name: 'SheetName', debug: true, gsunit: gsunitobj}
+ * @example let tRun = new RunTests({gsunit: tUnit, name: 'UnitTests'});
+ * @example tRun.createSheet('SmokeTests');
+ * @example let tSheetName = tRun.name;
+ */
 class RunTests {
   constructor(pArg = {}) {
-    /**
-     * @param {obj} pArg = {name: 'SheetName', debug: true, gsunit: gsunitobj}
-     * @example let tRun = new RunTests({gsunit: tUnit, name: 'UnitTests'});
-     * @example tRun.createSheet('SmokeTests');
-     * @example let tSheetName = tRun.name;
-     */
     // Private
     this._testList = [];
 
@@ -299,7 +244,7 @@ class RunTests {
     this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
     this.debug = pArg.debug !== undefined ? pArg.debug : false;
     this.gsunit = pArg.gsunit !== undefined ? pArg.gsunit : null;
-    this.version = '$Revision: 1.18 $';
+    this.version = '$Revision: 1.19 $';
 
     this.ss = SpreadsheetApp.getActiveSpreadsheet();
     if (this.ss == null)
@@ -311,6 +256,7 @@ class RunTests {
     this.selectSheet('constructor');
     if (this.st == null)
       throw new Error('No active st');
+
     this.err = 0;
     this.fail = 0;
     this.pass = 0;
@@ -328,18 +274,21 @@ class RunTests {
     this.resultWidth = 700;      // pixels
   } // RunTests
 
-  // ---------------------
+  /** ---------------------
+   * @method Output pMsg to console if this.debug is true
+   * @param {string} pMsg
+   */
   debugMsg(pMsg) {
     if (this.debug)
       console.info('Debug: ' + pMsg);
   }
 
-  // ---------------------
+  /** ---------------------
+   * @method Create this.name sheet if it is not defined. Otherwise activate the sheet.
+   * @param {string} pCaller - what function call this. Used for debugging.
+   * @example let st = tRun.createSheet();
+   */
   selectSheet(pCaller = 'na') {
-    /**
-     * @param pCaller {string} Used for debugging
-     * @example let st = tRun.createSheet();
-     */
     try {
       //this.debugMsg('In selectSheet: ' + pCaller + ' this.name=' + this.name);
       this.st = this.ss.getSheetByName(this.name);
@@ -360,19 +309,20 @@ class RunTests {
       console.error(e.stack);
       throw e;
     }
-  }
+  } // selectSheet
 
-  // ---------------------
+  /** ---------------------
+   * @method Output pMsg to the "toast" display. toast is usually called directly.
+   * @param {string} pMsg - limited to 135 characters
+   * @example tRun.toast('Created: ' + tRun.name);
+   */
   toast(pMsg, pTitle = '', pTime = -1) {
-    /**
-     * @param {string} pMsg
-     * @example tRun.toast('Created: ' + tRun.name);
-     */
-    //this.debugMsg('In toast');
     this.ss.toast(pMsg, pTitle, pTime);
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @method Clear all of the test counts and clear the result sheet.
+   */
   resetTests() {
     //this.debugMsg('In resetTests');
     this.err = 0;
@@ -384,9 +334,10 @@ class RunTests {
     }
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @method Add a test function to the list of test functions to be run.
+   */
   addTest(pTest) {
-    //this.debugMsg('In addTest');
     if (typeof (pTest) != 'function') {
       ++this.err;
       throw new Error('addTest argument is not a function.')
@@ -394,25 +345,27 @@ class RunTests {
     this._testList.push(pTest);
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @method List the test function names in testList
+   */
   listTests() {
-    //this.debugMsg('In listTests');
     console.info('List ' + this._testList.length + " tests:");
-    //console.info(this._testList);
-    for (let fun of this._testList) {
-      let funName = fun.toString().match(/.*\(\)/)[0];
-      console.info(funName);
-    }
+    for (let fun of this._testList)
+      console.info(fun.toString().match(/.*\(\)/)[0]);
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @method Create the heading for the test result sheet.
+   */
   _sheetHeading() {
     this.selectSheet('_sheetHeading');
     this.st.insertRowBefore(1);
     this.st.getRange(1, 1, 1, 4).setValues([['Status', 'Count', 'Function', 'Results']]).setBackground(this.titleColor).setFontWeight("bold");
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @method Format the sheet's column sizes.
+   */
   formatSheet() {
     this.selectSheet('formatSheet');
     this.st.autoResizeColumns(1, 3); // Columns: Status, Count, Function
@@ -421,20 +374,22 @@ class RunTests {
     this.st.getRange(1, 4, tNumRows).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @private
+   * @method Append the test result to the sheet.
+   * @param {array} pRow - array of row values to be appended to sheet
+   * @param {string} pColor - pass, fail, or error color
+   */
   _appendResult(pRow, pColor) {
-    /**
-     * @private
-     * @param {array} pRow
-     * @param {string} pColor
-     */
     this.selectSheet('_appendResult');
     this.st.appendRow(pRow);
     let tRow = this.st.getLastRow();
     this.st.getRange(tRow, 1, 1).setBackground(pColor);
   }
 
-  // -------------------------------
+  /** -------------------------------
+   * @method This is the main function for running all of the test in testList.
+   */
   runTests() {
     //this.debugMsg('In runTests');
     if (this.showInConsole)
@@ -491,7 +446,9 @@ class RunTests {
     }
   }
 
-  // -------------------------------
+  /** ---------------------
+   * @method Output a summary of the test results, if showResults
+   */
   testResults() {
     try {
       //this.debugMsg('In testResults');
@@ -500,7 +457,13 @@ class RunTests {
       let tRowErr = ['Error', this.err];
       let tRowTotal = ['Total', this.pass + this.fail + this.err];
       let tRowAsserts = ['Asserts', this.gsunit.numAsserts];
-      let tRow = [tRowPass.join(' '), tRowFail.join(' '), tRowErr.join(' '), tRowTotal.join(' '), tRowAsserts.join(' ')];
+      let tRow = [
+        tRowPass.join(' '), 
+        tRowFail.join(' '), 
+        tRowErr.join(' '), 
+        tRowTotal.join(' '), 
+        tRowAsserts.join(' '),
+      ];
       let tMsg = tRow.join(';\n');
       if (this.showInSheet) {
         this.selectSheet('testResults');
@@ -518,59 +481,74 @@ class RunTests {
         this.toast(tMsg, 'Summary');
     } catch (e) {
       console.error(e.stack);
+      throw e;
     }
-  }
+  } // testResults
 } // RunTests
 
-// ===============================================
-// Validate GsUnit and Runtests
-
-// ---------------------
-/* Define the unit tests
- * There can be multiple assertion tests in a unit test.
- * The primary criteria is that the top unit test functiuons can be run in any order.
+// ======================================================================
+/* Run Unit Tests to validate GsUnit.
  */
 
-// ---------------------
-function gsunitTestSheetUnit(pTest, pUnit) {
-  function testCreateSheet() {
-    let tRun = new RunTests({ name: 'GSUnitValidateSheet', debug: true });
-    pUnit.assertTrue('Check debug', tRun.debug, 'gsts1');
-    pUnit.assertEqual('Sheet exists', tRun.st.getName(), 'GSUnitValidateSheet', 'gsts2');
-  }
-  pTest.addTest(testCreateSheet);
-}
+// ==============================================
+// Define menus
 
-function gsunitSmokeTests(pTest, pUnit) {
-  function testAssertsPass() {
-    pUnit.assertEqual('These should be equal', 5, 5, 'gsst1');
-    pUnit.assertNotEqual('These should not be equal', 5, 1, 'gsst2');
-  }
-  pTest.addTest(testAssertsPass);
-
-  function testAssertsFail_1() {
-    //error
-    pUnit.assertEquals('An Error is expected here.', 5, 1, 'gsst3');
-  }
-  pTest.addTest(testAssertsFail_1);
-
-  function testAssertsFail_2() {
-    pUnit.assertNotEqual('A Fail is expected here.', 5, 5, 'gsst4');
-  }
-  pTest.addTest(testAssertsFail_2);
-
-  function testAssertsFail_3() {
-    pUnit.assertEqual('A Fail is expeced here.', 5, 1, 'gsst5');
-  }
-  pTest.addTest(testAssertsFail_3);
-} // gsunitSmokeTests
-
-// ------------------------------
-/* Run tests
- * The are functions with no arguments so that they can be called by menus.
- * The Unit test functions can also be listed in the RunTest call.
+/** ----------------------
+ * @function This is usually called by the test script menu function.
+ * @param {obj} pUi - the ui handle for the SS
+ * @param {obj} pMenu - the handle for the menu object
  */
+function menuGsUnitTest(pUi, pMenu) {
+  pMenu = pMenu.addSeparator()
+    .addSubMenu(pUi.createMenu('Test GSUnit')
+      .addItem('Verify Sheet', 'runGsUnitTestSheet')
+      .addItem('Smoke Test', 'runGsUnitSmokeTest')
+      .addItem('Test All', 'runGsUnitTestAll')
+    );
+  return pMenu;
+} // menuGsUnitTest
 
+/* Example for menuGsUnitTest menus
+
+  // Put this in the "top" script file
+  function onOpen(e) {
+    try {
+      let ui = SpreadsheetApp.getUi();
+      let menu = ui.createMenu('Rename-Files')
+        .addItem('Get List', 'menuGetList')
+        .addItem('Rename List', 'menuRenameList')
+        .addItem('Undo List', 'menuUndoList')
+      if (typeof menuTestRename === 'function')
+        menu = menuTestRename(ui, menu);
+      menu.addToUi();
+    } catch (e) {
+      console.error('InternalError');
+      console.error(e.stack);
+      throw e;
+    }
+  }
+
+  // Put this in the test script file for the "top" script
+  function menuTestRename(pUi, pMenu) {
+    pMenu = pMenu.addSeparator()
+      .addSubMenu(pUi.createMenu('Test Replace')
+        .addItem('Make Class', 'runMakeClass')
+        .addItem('Check Config', 'runCheckConfig')
+        .addItem('Get Files Test', 'runGetFilesTest')
+        .addItem('Rename Files Test', 'runRenameFiles')
+        .addItem('RunAll Test', 'runAllTests')
+        .addItem('Clean Up', 'runCleanup')
+      );
+    if (typeof menuGsUnitTest === 'function')
+      pMenu = menuGsUnitTest(pUi, pMenu);
+    return pMenu;
+  }
+*/
+
+// -------------------------------------------------
+/* Select the tests to be run.
+ * There are no args so they can be called by the UI menu.
+ */
 // ---------------------
 function runGsUnitTestSheet() {
   gsunitRunTest([gsunitTestSheetUnit]);
@@ -583,16 +561,17 @@ function runGsUnitSmokeTest() {
 
 // ---------------------
 function runGsUnitTestAll() {
-  gsunitRunTest([gsunitSmokeTests, gsunitTestSheetUnit]);
+  gsunitRunTest([gsunitTestSheetUnit, gsunitSmokeTests]);
 }
 
-// --------------------------------------
+/** -------------------------------------------------------
+ * @function Run the tests specified with the above functions.
+ * @param {array} pTestFun - this will be one or more function names.
+ */
 function gsunitRunTest(pTestFun = []) {
-  /**
-   * @param {array} pTestFun array of test functions
-   */
   console.time('runTests');
   var tUnit = new GsUnit({ name: 'base' });
+
   let tRun = new RunTests({ name: 'GSUnitValidate', debug: false, gsunit: tUnit });
   tRun.debug = false;
   tRun.showPass = true;
@@ -606,6 +585,46 @@ function gsunitRunTest(pTestFun = []) {
     tTest(tRun, tUnit);
   tRun.runTests();
 
-  //tRun.testResults();
+//  tRun.testResults();
   console.timeEnd('runTests');
 }
+
+// ==============================================
+/* Define the Unit Tests
+ * There can be multiple assertion tests in a unit test.
+ * The primary criteria is that the top unit test functions can be run in any order.
+ */
+
+// ---------------------
+function gsunitTestSheetUnit(pTest, pUnit) {
+  pTest.addTest(testCreateSheet);
+  function testCreateSheet() {
+    let tRun = new RunTests({ name: 'GSUnitValidateSheet', debug: true });
+    pUnit.assertTrue('Check debug', tRun.debug, 'gsts1');
+    pUnit.assertEqual('Sheet exists', tRun.st.getName(), 'GSUnitValidateSheet', 'gsts2');
+  }
+}
+
+function gsunitSmokeTests(pTest, pUnit) {
+  pTest.addTest(testAssertsPass);
+  function testAssertsPass() {
+    pUnit.assertEqual('These should be equal', 5, 5, 'gsst1');
+    pUnit.assertNotEqual('These should not be equal', 5, 1, 'gsst2');
+  }
+
+  pTest.addTest(testAssertsFail_1);
+  function testAssertsFail_1() {
+    // An error is expected here. Don't fix this.
+    pUnit.assertEquals('An Error is expected here.', 5, 1, 'gsst3');
+  }
+
+  pTest.addTest(testAssertsFail_2);
+  function testAssertsFail_2() {
+    pUnit.assertNotEqual('A Fail is expected here.', 5, 5, 'gsst4');
+  }
+
+  pTest.addTest(testAssertsFail_3);
+  function testAssertsFail_3() {
+    pUnit.assertEqual('A Fail is expeced here.', 5, 1, 'gsst5');
+  }
+} // gsunitSmokeTests
