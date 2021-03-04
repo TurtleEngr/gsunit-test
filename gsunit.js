@@ -1,7 +1,7 @@
 /**
  * $Source: /repo/public.cvs/app/gsunit-test/github/gsunit.js,v $
- * @copyright $Date: 2021/02/25 07:17:59 $ UTC
- * @version $Revision: 1.19 $
+ * @copyright $Date: 2021/03/04 09:17:40 $ UTC
+ * @version $Revision: 1.20 $
  * @author TurtleEngr
  * @license https://www.gnu.org/licenses/gpl-3.0.txt
  * @example see file verify-gsunit.gs
@@ -43,7 +43,7 @@ class GsUnit {
   constructor(pArg) {
     this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
     this.debug = pArg.debug !== undefined ? pArg.debug : false;
-    this.version = '$Revision: 1.19 $';
+    this.version = '$Revision: 1.20 $';
     this.showDefault = true;  // Show default messages with user messages.
     this.numAsserts = 0;  // Count the number of assert tests run.
   }
@@ -226,6 +226,19 @@ class GsUnit {
     if (pActual.includes(pExpected))
       throw new AssertFail(this._default(pMsg, 'Expected string was found: "' + pExpected + '"'), pActual, pExpected, 'StrNotContains', pCode);
   }
+
+  assertThrow(pMsg, pActual, pCode = '') {
+    /**
+     * @example let e = pUnit.assertThrow('Expect a throw.', fUnction.bind(null,[3,4]), 'uu2i-4');
+     */
+    ++this.numAsserts;
+    try {
+      pActual();
+      throw new AssertFail(this._default(pMsg, 'Expected a throw.'), 'pActual', true, 'Throw', pCode);
+    } catch(e) {
+      return e;
+    }
+  }
 } // GsUnit
 
 // ======================================================================
@@ -244,7 +257,7 @@ class RunTests {
     this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
     this.debug = pArg.debug !== undefined ? pArg.debug : false;
     this.gsunit = pArg.gsunit !== undefined ? pArg.gsunit : null;
-    this.version = '$Revision: 1.19 $';
+    this.version = '$Revision: 1.20 $';
 
     this.ss = SpreadsheetApp.getActiveSpreadsheet();
     if (this.ss == null)
