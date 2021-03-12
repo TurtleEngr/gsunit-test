@@ -1,14 +1,44 @@
 /**
  * $Source: /repo/public.cvs/app/gsunit-test/github/gsunit.js,v $
- * @copyright $Date: 2021/03/10 18:45:53 $ UTC
- * @version $Revision: 1.21 $
+ * @copyright $Date: 2021/03/12 08:45:51 $ UTC
+ * @version $Revision: 1.22 $
  * @author TurtleEngr
  * @license https://www.gnu.org/licenses/gpl-3.0.txt
  * @example see file verify-gsunit.gs
+ * 
+ * Prefix codes:
+ *  pName       - a parameter passed into a function
+ *  pArg={}     - pass args *in any order* and to set default values for any arg
+ *  tName       - a variable that is local to a function
+ *  obj.name    - a class variable that a user can usually "get" or "set"
+ *  obj._name   - a class variable that is assumed to be private (do not depend on it)
+ *  obj.name()  - a class method
+ *  _name()     - a function or method that is assumed to be private (do not depend on it)
+ *  obj.uiName()- this method is probably called by a menuName() function
+ *  menuName()  - a menu item is usually bound to these functions, and they call obj.uiName() methods
+ *  fName()     - usually a global function
+ * 
+ *  runName()   - run the defined tests. No args, so that it can be called by a menu item. See RunTests class
+ *  defName()   - define the unit test functions, and any setup/cleanup code. See RunTests class
+ *  unitName()  - unit test functions in defName()
+ *  assertName() - gsunit test asserts. See GsUnit class
+ * 
+ *  defName (and unitName in defName) can be callable in any order. Use menuName and runName functions to
+ *  to select the desired tests.
  */
 
 //==============================================
 'use strict';
+
+/**
+ * This is a simple way of handling defaults for object params.
+ */
+function fDefaultArg(pArg, pDefault) {
+  if (pArg == 'undefined' || pArg == null || pArg == '')
+    return pDefault;
+  return pArg
+}
+
 
 //==============================================
 /**
@@ -43,7 +73,7 @@ class GsUnit {
   constructor(pArg) {
     this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
     this.debug = pArg.debug !== undefined ? pArg.debug : false;
-    this.version = '$Revision: 1.21 $';
+    this.version = '$Revision: 1.22 $';
     this.showDefault = true;  // Show default messages with user messages.
     this.numAsserts = 0;  // Count the number of assert tests run.
   }
@@ -262,10 +292,10 @@ class RunTests {
     this._testList = [];
 
     // Public
-    this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
-    this.debug = pArg.debug !== undefined ? pArg.debug : false;
-    this.gsunit = pArg.gsunit !== undefined ? pArg.gsunit : null;
-    this.version = '$Revision: 1.21 $';
+    this.name = fDefaultArg(pArg.name, 'UnitTests');
+    this.debug = fDefaultArg(pArg.debug, false);
+    this.gsunit = fDefaultArg(pArg.gsunit, null);
+    this.version = '$Revision: 1.22 $';
 
     this.ss = SpreadsheetApp.getActiveSpreadsheet();
     if (this.ss == null)
