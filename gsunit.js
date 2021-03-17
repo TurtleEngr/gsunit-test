@@ -1,7 +1,7 @@
 /**
  * $Source: /repo/public.cvs/app/gsunit-test/github/gsunit.js,v $
- * @copyright $Date: 2021/03/13 17:39:20 $ UTC
- * @version $Revision: 1.23 $
+ * @copyright $Date: 2021/03/17 07:14:23 $ UTC
+ * @version $Revision: 1.25 $
  * @author TurtleEngr
  * @license https://www.gnu.org/licenses/gpl-3.0.txt
  * @example see file verify-gsunit.gs
@@ -73,7 +73,7 @@ class GsUnit {
   constructor(pArg) {
     this.name = pArg.name !== undefined || pArg.name == '' ? pArg.name : 'UnitTests';
     this.debug = pArg.debug !== undefined ? pArg.debug : false;
-    this.version = '$Revision: 1.23 $';
+    this.version = '$Revision: 1.25 $';
     this.showDefault = true;  // Show default messages with user messages.
     this.numAsserts = 0;  // Count the number of assert tests run.
   }
@@ -168,7 +168,7 @@ class GsUnit {
   assertEqual(pMsg, pActual, pExpected, pCode = '') {
     ++this.numAsserts;
     if (pActual != pExpected)
-      throw new AssertFail(this._default(pMsg, 'Expected "' + pExpected + '" got "' + pActual + '".'), pActual, pExpected, 'Equal', pCode);
+      throw new AssertFail(this._default(pMsg, 'Expected "' + pExpected + '"\ngot "' + pActual + '".'), pActual, pExpected, 'Equal', pCode);
   }
 
   assertNotEqual(pMsg, pActual, pExpected, pCode = '') {
@@ -296,7 +296,7 @@ class RunTests {
     this.name = fDefaultArg(pArg.name, 'UnitTests');
     this.debug = fDefaultArg(pArg.debug, false);
     this.gsunit = fDefaultArg(pArg.gsunit, null);
-    this.version = '$Revision: 1.23 $';
+    this.version = '$Revision: 1.25 $';
 
     this.ss = SpreadsheetApp.getActiveSpreadsheet();
     if (this.ss == null)
