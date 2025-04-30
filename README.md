@@ -1,5 +1,12 @@
 gsunit-test
 ===========
+
+[//]: # (For more badges see: https://shields.io/badges)
+
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3ATurtleEngr%2Fgsunit-test%20is%3Aopen&style=flat&label=issues)
+![GitHub License](https://img.shields.io/github/license/TurtleEngr/gsunit-test)
+
+
 Unit tests and a test driver that can be used to test Google Apps Scripts.
 * See class GsUnit for the unit test functions.
 * See class RunTests for the test driver
