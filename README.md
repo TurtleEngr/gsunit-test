@@ -3,6 +3,7 @@ gsunit-test
 
 [//]: # (For more badges see: https://shields.io/badges)
 
+![GitHub Release](https://img.shields.io/github/v/release/TurtleEngr/gsunit-test)
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3ATurtleEngr%2Fgsunit-test%20is%3Aopen&style=flat&label=issues)
 ![GitHub License](https://img.shields.io/github/license/TurtleEngr/gsunit-test)
 
