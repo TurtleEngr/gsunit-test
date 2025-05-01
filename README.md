@@ -3,9 +3,9 @@ gsunit-test
 
 [//]: # (For more badges see: https://shields.io/badges)
 
-![GitHub Release](https://img.shields.io/github/v/release/TurtleEngr/gsunit-test)
-![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3ATurtleEngr%2Fgsunit-test%20is%3Aopen&style=flat&label=issues)
-![GitHub License](https://img.shields.io/github/license/TurtleEngr/gsunit-test)
+[![GitHub Release](https://img.shields.io/github/v/release/TurtleEngr/gsunit-test)](https://github.com/TurtleEngr/gsunit-test/releases)
+[![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3ATurtleEngr%2Fgsunit-test%20is%3Aopen&style=flat&label=issues)](https://github.com/TurtleEngr/gsunit-test/issues)
+[![GitHub License](https://img.shields.io/github/license/TurtleEngr/gsunit-test)](https://github.com/TurtleEngr/gsunit-test/blob/develop/LICENSE)
 
 
 Unit tests and a test driver that can be used to test Google Apps Scripts.
